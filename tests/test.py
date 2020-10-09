@@ -4571,6 +4571,7 @@ class TestTransparentEncryption(BaseTestCase):
             .where(self.encryptor_table.c.id == id))
         row = result.fetchone()
         self.assertIsNotNone(row)
+        self.assertIn('number', row, msg="cannot find `number` in `row` even though all columns were selected")
 
         # should be decrypted
         self.assertEqual(row['default_client_id'], default_client_id)
@@ -4618,10 +4619,11 @@ class TestTransparentEncryption(BaseTestCase):
 
         # update with acrastructs and AcraServer should not
         # re-encrypt
-        data_fields = ['default_client_id', 'specified_client_id', 'zone_id',
+        data_fields = ['default_client_id', 'specified_client_id', 'number', 'zone_id',
                        'raw_data', 'empty']
         data = {k: encrypted_data[k] for k in data_fields}
         data['id'] = context['id']
+        self.assertIn('number', data, msg="cannot find `number` in `data` after copying from `encrypted_data`")
         self.update_data(data)
 
         data = self.fetch_raw_data(context)
@@ -4655,6 +4657,7 @@ class TestTransparentEncryption(BaseTestCase):
             .where(self.encryptor_table.c.id == context['id'])
             .values(default_client_id=context['default_client_id'],
                     specified_client_id=context['specified_client_id'],
+                    number=context['number'],
                     zone_id=context['zone_id'],
                     raw_data=context['raw_data'])
         )
